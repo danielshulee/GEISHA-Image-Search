@@ -2,19 +2,29 @@
 
 Image search for [GEISHA](http://geisha.arizona.edu/geisha/), an online repository for gene expression in chicken embryos.
 
-## GEISHA
+<img src='http://geisha.arizona.edu/geisha/photos/R340.TBX4.S19.01.jpg' align="middle" width=300>
 
 ## Problem
 
-Often times in science, domain knowledge is needed to access or understand many useful resources, creating an annoying barrier in which knowledge is needed to learn. In my experience, developmental biology is no different. For example, [GEISHA](http://geisha.arizona.edu/geisha/) is an online database with images depicting gene expression in chicken embryos. It is a valuable resource for both research and learning, but with embryos in over 40 different stages of development and genes expressed in hundreds of different anatomical locations on the embryos, it can be overwhelming to make sense of the data.
+[GEISHA](http://geisha.arizona.edu/geisha/), a [National Institutes of Health](https://www.nih.gov/) funded project, investigates gene expression patterns in chicken embryos using situ hybridization and provides images of chicken embryos in an online database. By doing so, it is a valuable resource for researchers and students of developmental biology. However, with an abundance of embryo images comes difficulty making sense of all the images, and currently, there are only a couple of esoteric ways to query and filter embryos. These methods are mostly limited to filtering by stage and anatomical location (the blue area in which a gene is expressed), and they pose the problems of being difficult for students to understand, and still returning up to thousands of images for common categories (one anatomical location returns over 6000 results). To address these problems, this project introduces a new way: using an image to search for other images.
 
-<img src='http://geisha.arizona.edu/geisha/photos/R340.TBX4.S19.01.jpg' align="middle" width=300>
+<img src='Img/Geisha_early_stage.jpeg' width='500'>
 
-For each image, there are a few important pieces of metadata— the stage of embryo development, and the anatomical location (the patches stained blue). Currently, these two are the primary ways that one can use to query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those who currently have an image of an embryo have no way of finding similar ones. To address this problem, this project seeks to create an engine for [GEISHA](http://geisha.arizona.edu/geisha/) that allows easier browsing through image search.
+With Geisha Image Search, a researcher or student could find new images by inputting one of their own, and getting out images of similar embryos. Using an embryo image from the [GEISHA](http://geisha.arizona.edu/geisha/) website or another lab or publication, a student or researcher is able to find similar images to compare or learn from. This way, students are able to browse images without a full understanding of their terminology or science, and researchers have a way to quickly search through thousands of photos.
+
+For example, a student in his research might come across this image:
+
+<img src='Img/Geisha_model_input.png' height='350'>
+
+Without Geisha Image Search, if the student wanted to find other embyros like it, he/she would have to identify the features of that image and query them, or scroll through the [GEISHA](http://geisha.arizona.edu/geisha/) database in hopes of finding others like it. With Geisha Image Search, he/she could save that image and upload it to the tool in any size and in any typical format, and receive these images in response:
+
+<img src='Img/Geisha_model_output.jpeg' height='550'>
+
+Given these returned images (in reality, there would be a lot more than 4), the student can choose and analyze the ones that match his/her needs. This method can be applied to any embyro image, and it is an effective introduction to [GEISHA](http://geisha.arizona.edu/geisha/) and developmental biology.
 
 ### The Criteria for Similarity
 
-As stated above, there are two important criteria for comparing embryos— stage and location.
+For each image, there are two features that distinguish it from others: the stage of embryo development, and the anatomical locations (the patches stained blue, denoting gene expression). Currently, these are the two primary criteria through which one can query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those who currently have an image of an embryo have no way of finding similar ones. To address this problem, this project seeks to create an engine for [GEISHA](http://geisha.arizona.edu/geisha/) that allows easier browsing through image search.
 
 Stage refers the how far the chicken embryo is in development. Here are two groups of embryos in similar stages.
 
@@ -28,7 +38,6 @@ Location refers to where the gene is expressed on the embryo, indicated by blue 
 <img src='Img/hardyCFCSt10.1.jpeg' width='250'>
 
 When comparing images, those with staining in similar places will be considered more similar.
-
 
 ## Solution
 

@@ -20,36 +20,34 @@ Without Geisha Image Search, if the student wanted to find other embyros like it
 
 <img src='Img/Geisha_model_output.jpeg' height='550'>
 
-Given these returned images (in reality, there would be a lot more than 4), the student can choose and analyze the ones that match his/her needs. This method can be applied to any embyro image, and it is an effective introduction to [GEISHA](http://geisha.arizona.edu/geisha/) and developmental biology.
+Given these returned images (in reality, there would be a lot more than 4), all of which strongly resemble the initial image given, the student can choose and analyze the ones that match his/her needs. For researchers, this amounts to another method that can be used to find embryology images, and for students, this represents an effective way to learn about [GEISHA](http://geisha.arizona.edu/geisha/) and developmental biology without all of the prerequisite knowledge and intuition needed to fully understand it.
 
 ### The Criteria for Similarity
 
-For each image, there are two features that distinguish it from others: the stage of embryo development, and the anatomical locations (the patches stained blue, denoting gene expression). Currently, these are the two primary criteria through which one can query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those who currently have an image of an embryo have no way of finding similar ones. To address this problem, this project seeks to create an engine for [GEISHA](http://geisha.arizona.edu/geisha/) that allows easier browsing through image search.
+For each image, there are two features that distinguish it from others: the stage of embryo development, and the anatomical locations (the patches stained blue, denoting gene expression). As stated above, these currently are the two primary criteria through which one can query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those who with an image of an embryo may have difficulty finding similar ones. To address this problem, this project's image search engine automatically detects these two features and uses them browse for similar images across the [GEISHA](http://geisha.arizona.edu/geisha/) database.
 
 Stage refers the how far the chicken embryo is in development. Here are two groups of embryos in similar stages.
 
 <img src='Img/Geisha_early_stage.jpeg' width='500'>
 <img src='Img/Geisha_later_stage.jpeg' width='500'>
 
-Images of embryos in similar stages will be considered more similar.
-
-Location refers to where the gene is expressed on the embryo, indicated by blue staining. Here is an embryo with staining in only parts of its body.
+Location refers to where the gene is expressed on the embryo, indicated by blue staining. Here are two embryos with staining in similar places.
 
 <img src='Img/hardyCFCSt10.1.jpeg' width='250'>
 
-When comparing images, those with staining in similar places will be considered more similar.
+When comparing images, embryos in similar stages, with staining in similar places, will be considered more similar (they will visually look alike as well).
 
-## Solution
+## Solution Concept
 
-As mentioned above, the capability to input an image and find "similar" ones would be useful for students and researchers alike. My proposed solution involves deep learning, through which neural networks can be trained to predict the two most important parameters of every image: stage and anatomical location.
+As mentioned above, the capability to input an image and find "similar" ones would be useful for students and researchers alike. My proposed solution, Geisha Image Search, involves deep learning, through which neural networks are trained to predict the two most important parameters of every image: stage and anatomical location.
 
 ### Deep Learning
 
-Deep learning is a technique that enables a computer to "learn" from data, allowing it to extract patterns and perform tasks, even on complicated inputs that it has not seen. Among the advantages of deep learning is its ability to work with images. It can perform all sorts of analyses, such as classifying the contents of an image (e.g. the anatomical locations in an embryo) or performing regression (e.g. the stage of an embryo). Using deep learning, one can effectively train a computer to recognize chicken embryos and output meaningful information about them.
+Deep learning is a technique that enables a computer to "learn" from data, allowing it to extract patterns and perform tasks, even on complicated inputs that it has not seen. Among the advantages of deep learning is its ability to work with images. It performs all sorts of analyses, such as classifying the contents of an image (e.g. the anatomical locations in an embryo) or performing regression (e.g. the stage of an embryo). Using deep learning, Geisha Image Search can effectively recognize chicken embryos and extract meaningful information about them.
 
 The mechanism for deep learning is a structure called the "neural network". Based after the biological brain, the neural network is a learned mathematical function that maps inputs— images, in our case— to various outputs— anatomical locations and stage. These functions start with no predictive power, but given data with labels (the "correct answers" for what the stage or locations are), they can "learn" how to recognize patterns in images. Once these networks are trained with sufficient data, they can be deployed to new data that they have not seen— in our case, a new image given by the user in order to find "similar" ones.
 
-The reason that deep learning can find the "similarity" between images is the fact that a network, given an image, returns numerical outputs for whatever task is given. For example, when predicting anatomical locations (of which there are around 140), the network returns 140 numbers, all between 0 and 1, that represent the probability that the image has genes expressed in each location. For example, if the number in the vector corresponding to "Endoderm" is 0.98, the network is 98% sure that the embryo's endoderm has been expressed. Similarly, the network predicting stage would also return a number, although it doesn't symbolize a probability. Instead, it represents what stage the network thinks the image is in.
+The reason that deep learning can find the "similarity" between images is the fact that a network, given an image, returns numerical outputs for whatever task is given. For example, when predicting anatomical locations (of which there are around 140), the network returns around 140 fractions, all between 0 and 1, that represent the probability that the image has genes expressed in each location (for example, if the number in the vector corresponding to "Heart" is 0.98, the network is 98% sure that there in gene expression/blue staining in the embryo's heart). Similarly, the network predicting stage would also return a number, although it doesn't symbolize a probability. Instead, this number represents what stage the neural network thinks the image is in.
 
 Because each image can be converted into a set of numbers, we can find the similarity between different images. 
 
@@ -57,9 +55,7 @@ Because each image can be converted into a set of numbers, we can find the simil
 
 ## Computing Similarity
 
-With numbers associated with each image, we can compare the similarity between images. Specifically, each image in the GEISHA database has 4 sets of numbers. For location, each image has 2 vectors: one as the output from the neural network (which are the network's predictions), and one as the actual labels for the image, since we already know the actual locations for any image in the database. For stage, the same applies: there is one number representing the prediction 
-
-One challenge that arises is the problem of computing similarity. Since there are two different measurements (stage and locations), each with a different numerical structure (the output corresponding to location is a 141-dimensional vector, while the stage predctions are single numbers), it is hard to create a single metric that evaluates "similarity" between image. To solve this problem, I calculate separate similarities for location and stage, and normalized them to the same scale in order to combine them into a single metric.
+Having numbers associated with each image, we can compare images. Specifically, Geisha Image Search uses deep learning to obtain a set of numbers (a list of numbers for the embryo's location, and one number for the stage) for any new image it receives, and leverages these numbers to compare the image with existing ones in the database (whose numbers have already been rendered). For both the list of fractions and the single number, Geisha Image Search compares it with every image in the [GEISHA](http://geisha.arizona.edu/geisha/) database, calculating how similar other images are in stage or location. Given this, Geisha Image Search dynamically combines this information given the user's specific preferences (whether they care about embryos in similar stages or locations), and returns images that are hopefully like the one initially given.
 
 ### Overview of my methods
 

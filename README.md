@@ -6,7 +6,7 @@ Image search for [GEISHA](http://geisha.arizona.edu/geisha/), an online reposito
 
 ## Problem
 
-[GEISHA](http://geisha.arizona.edu/geisha/), a [National Institutes of Health](https://www.nih.gov/) funded project, investigates gene expression patterns in chicken embryos using situ hybridization and provides images of chicken embryos in an online database. By doing so, it is a valuable resource for researchers and students of developmental biology. However, with an abundance of embryo images comes difficulty making sense of all the images, and the existing methods of querying and filtering embryos can be esoteric and time-consuming. These methods are mostly limited to filtering by stage and anatomical location (the blue area in which a gene is expressed), and they pose the problems of being difficult for students to understand, and returning up to thousands of images for common categories (one anatomical location returns over 6000 results). To address these problems, this project introduces a new way: using an image to search for other images.
+[GEISHA](http://geisha.arizona.edu/geisha/), a [National Institutes of Health](https://www.nih.gov/) funded project, investigates gene expression patterns in chicken embryos using *in situ* hybridization and provides images of chicken embryos in an online database. By doing so, it is a valuable resource for researchers and students of developmental biology. However, with an abundance of embryo images comes difficulty making sense of all the images, and the existing methods of querying and filtering embryos can be esoteric and time-consuming. These methods are mostly limited to filtering by stage and anatomical location (the blue area in which a gene is expressed), and they pose the problems of being difficult for students to understand, and returning up to thousands of images for common categories (one anatomical location returns over 6000 results). To address these problems, this project proposes a machine-learning based solution: using an image to search for other images.
 
 <img src='Img/Geisha_early_stage.jpeg' width='500'>
 
@@ -24,14 +24,14 @@ Given these returned images (in reality, there would be a lot more than 4), the 
 
 ### The Criteria for Similarity
 
-For each image, there are two features that distinguish it from others: the stage of embryo development, and the anatomical locations (the patches stained blue, denoting gene expression). As stated above, these currently are the two primary criteria through which one can query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those with an image of an embryo may have difficulty finding similar ones. To address this problem, this project's image search engine automatically detects these two features and uses them browse for similar images across the [GEISHA](http://geisha.arizona.edu/geisha/) database.
+For each image, there are two features that distinguish it from others: the stage of embryo development, and the anatomical locations (the patches stained blue, denoting gene expression). As stated above, these currently are the two primary criteria through which one can query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those with an image of an embryo may have difficulty finding similar ones. To address this problem, this project's image search engine automatically detects these two features and uses them to browse for similar images across the [GEISHA](http://geisha.arizona.edu/geisha/) database.
 
-Stage refers the how far the chicken embryo is in development. Here are two groups of embryos in similar stages.
+Stage refers to how far the chicken embryo is in development. Here are two groups of embryos in similar stages.
 
 <img src='Img/Geisha_early_stage.jpeg' width='500'>
 <img src='Img/Geisha_later_stage.jpeg' width='500'>
 
-Location refers to where the gene is expressed on the embryo, indicated by blue staining. Here are two embryos with staining in similar places.
+Location refers to where the gene is expressed in the embryo, indicated by blue staining. Here are two embryos with staining in similar places.
 
 <img src='Img/hardyCFCSt10.1.jpeg' width='250'>
 
@@ -47,7 +47,7 @@ Deep learning is a technique that enables a computer to "learn" from data, allow
 
 The mechanism for deep learning is a structure called the "neural network". Based after the biological brain, the neural network is a learned mathematical function that maps inputs (images, in our case) to various outputs (stage and anatomical locations). These functions start with no predictive power, but given data with labels (the "correct answers" for what the stage or locations are), they can "learn" how to recognize patterns in images. Once these networks are trained with sufficient data, they can be deployed on new data that they have not seen— in our case, a new image given by the user in order to find "similar" ones.
 
-Deep learning is able to find the "similarity" between images because a network can return numerical outputs for any image. For example, when predicting anatomical locations (of which there are around 140), Geisha Image Search's neural network returns a list of 140 fractions, all between 0 and 1, that represents the likelihood of gene expression in each location (for example, if the number in the list corresponding to "Heart" is 0.98, the neural network is 98% sure that there in gene expression/blue staining in the embryo's heart). Similarly, the neural network predicting stage would also return a number, although it doesn't symbolize a probability. Instead, this number represents what stage the neural network thinks the image is in.
+Deep learning is able to find the "similarity" between images because a network can return numerical outputs for any image. For example, when predicting anatomical locations (of which there are around 140), Geisha Image Search's neural network returns a list of 140 fractions, all between 0 and 1, that represents the likelihood of gene expression in each location (for example, if the number in the list corresponding to "Heart" is 0.98, the neural network is 98% sure that there is gene expression/blue staining in the embryo's heart). Similarly, the neural network predicting stage would also return a number, although it doesn't symbolize a probability. Instead, this number represents what stage the neural network thinks the image is in.
 
 Because each image can be converted into a set of numbers, we can find the similarity between different images. 
 
@@ -55,7 +55,7 @@ Because each image can be converted into a set of numbers, we can find the simil
 
 ## Computing Similarity
 
-Having numbers associated with each image, we can compare images. Specifically, Geisha Image Search uses deep learning to obtain a set of numbers (a list of numbers for the embryo's location, and one number for the stage) for any new image it receives, and leverages these numbers to compare the image with existing ones in the database (whose numbers have already been rendered). For both the list of fractions and the single number, Geisha Image Search compares it with every image in the [GEISHA](http://geisha.arizona.edu/geisha/) database, calculating how similar other images are in stage or location. Given this, Geisha Image Search dynamically combines this information given the user's specific preferences (whether they care about embryos in similar stages or locations), and returns images that are hopefully similar to the one initially given.
+Having numbers associated with each image, we can compare images. Specifically, Geisha Image Search uses deep learning to obtain a set of numbers (a list of numbers for the embryo's location, and one number for the stage) for any new image it receives, and leverages these numbers to compare the image with existing ones in the database (whose numbers have already been rendered). For both the list of fractions and the single number, Geisha Image Search compares it with every image in the [GEISHA](http://geisha.arizona.edu/geisha/) database, calculating how similar other images are in stage or location. Given this, Geisha Image Search dynamically combines this information given the user's specific preferences (whether they care about embryos in similar stages or locations), and returns images that are similar to the one initially given.
 
 
 Project Organization

@@ -51,7 +51,7 @@ Deep learning is able to find the "similarity" between images because a neural n
 
 Because each image can be converted into a set of numbers, we can find the similarity between different images. 
 
-<img src='Img/Concept_map.png' width='400'>
+<img src='Img/Concept_map.png' width='500'>
 
 ## Computing Similarity
 

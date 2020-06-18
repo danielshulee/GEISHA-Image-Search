@@ -1,110 +1,134 @@
-# GEISHA-Image-Search
+ # GEISHA-Image-Search
 
-Image search for [GEISHA](http://geisha.arizona.edu/geisha/), an online repository for gene expression in chicken embryos.
+Improved image search for [Geisha](http://geisha.arizona.edu/geisha/), an online repository for gene expression in chicken embryos.
 
-<img src='http://geisha.arizona.edu/geisha/photos/R340.TBX4.S19.01.jpg' align="middle" width=300>
+<img src='img/example-embryo-images.png' height=250>
+
+**Table of Contents**
+
+* [Overview](#overview)
+* [Usage](#usage)
+* [Problem](#problem)
+* [Solution Concept](#solution-concept)
+
+##  Overview
+
+This project creates an image search engine for images within the [Geisha](http://geisha.arizona.edu/geisha/) database. It allows for search of embryo images based on an input embryo, which can yield quicker and more accurate results than querying based on manually specified parameters. With GEISHA Image Search, scientists and students can easily find and compare images based on similarity.
+
+An input embryo can be from any source, including:
+- From within the Geisha database
+- From another database or publication
+- Created via drawing, in which a user artifically creates staining patterns on a blank embryo (currently in development)
+
+Given this input, Geisha Image Search will find and return the most "similar" Geisha images (more on the definition of similarity below).
+
+For usage information, read [directly below](#usage). For more information about the purpose and methodology of this project, read the [sections](#problem) further below.
+
+## Usage
+
+This image search engine has been integrated in the [Geisha](http://geisha.arizona.edu/) website. It is recommended to use this search engine via the website tool.
+
+It can also be deployed locally via [Flask](https://github.com/pallets/flask) as a python web app. Running it requires the following **dependencies**:
+
+* python 3+
+* Flask==1.1.1
+* [fastai](https://github.com/fastai/fastai)==1.0.61
+
+When deployed, the web app accepts an input image, and then searches and returns similar images in the Geisha database. It accepts two parameters, which are given as query parameters in the app's url:
+
+- `filename` (required): the filename of an image to find similar images to. This can be a path to a local image file (absolute or relative to this repository), or the filename of an image on the [Geisha](http://geisha.arizona.edu/) website (upon which it will be downloaded directly). Anything else will result in an error.
+- `num_images`: the number of similar images to return. The default is 50.
+
+A sorted list of the most similar image filenames are returned, separated by newline characters. On a browser, this will display as a list of filenames separated by spaces.
+
+The web app is located at `src/image-search-flask.py`. Run it from the **main directory**:
+
+```bash
+python src/image-search-flask.py
+```
+
+Then, visit `localhost:8080`, and specify the filename and number of images (optionally) via query parameters.
+
+### Example Usage:
+**Input link:** [localhost:8080/?filename=R449.CDH5.S17.001.jpg&n=10]()
+
+**Displayed Output (may be separated by spaces instead):**
+```
+R449.CDH5.S17.001.jpg
+R449.CDH5.S16.001.jpg
+R361.EGFL7.S17D.004.jpg
+R467.CDH5.S14002.jpg
+...
+```
+
+The images can then be found on the Geisha website by appending the filename to this link: http://geisha.arizona.edu/geisha/photos/ + \<filename\>
+
+### Example images:
+
+This repository contains several examples of the image search engine's results, located in `data/example-images`. Each folder contains 11 images: an example input, with 10 output embryos in order of similarity. The input embryo is denoted by "Input." in its filename, while the rest are denoted by numbers in their filenames. 
+
 
 ## Problem
 
-[GEISHA](http://geisha.arizona.edu/geisha/), a [National Institutes of Health](https://www.nih.gov/) funded project, investigates gene expression patterns in chicken embryos using whole mount *in situ* hybridization and provides images of gene expression patterns in chicken embryos through an online database. By doing so, it is a valuable resource for researchers and students of developmental biology. However, with an abundance of embryo images comes difficulty making sense of them.  Existing methods of querying and filtering embryos can be esoteric and time-consuming, and are primarily limited to filtering by stage and anatomical location (the blue area in which a gene is expressed). Anatomies pose the problems of being difficult for students to understand, and returning up to thousands of images for common categories (one anatomical location returns over 6000 results). To address these problems, this project proposes a machine-learning based solution: using an image to search for other images.
+[GEISHA](http://geisha.arizona.edu/geisha/), a [National Institutes of Health](https://www.nih.gov/) funded project, investigates gene expression patterns in chicken embryos using whole mount *in situ* hybridization, and then provides images of those expression patterns through an online database. By doing so, it is a valuable resource for researchers and students of developmental biology. However, the embryo images in Geisha can be numerous and difficult to find. Existing methods of querying and filtering embryos are primarily limited to filtering by **stage** (the age the embryo in development) and **anatomical location** (the areas marked by blue staining in which a gene is expressed). This information has to be manually provided, and are unspecific– thousands of images can correspond to a certain stage or stained location. To address these problems, this project creates an image search engine, in which embryo images can be used to find other images.
 
-<img src='Img/Geisha_early_stage.jpeg' width='500'>
+With Geisha Image Search, a researcher or student can input a picture of an embyro, and then search for similar embryos. The definition of similarity can be found [below](#the-criteria-for-similarity). By allowing search though existing images rather than through technical parameters, students  and researchers have a quick and effective way to find embryos of a certain category. This is especially relevant for students, who may not have a full understanding of staining or requisite terminology.
 
-With Geisha Image Search, a researcher or student could find new images by inputting one of their own, and returning images of embros of similar stage and staining patterns. Using an embryo image from the [GEISHA](http://geisha.arizona.edu/geisha/) website or another lab or publication, he/she is able to find similar images to compare or learn from. This way, students are able to browse images without a full understanding of their terminology or science, and researchers, especially those who use comparable images in their research, have a way to quickly search through thousands of photos and obtain the ones relevant to them.
+For example, a scientist might come across the embryo on the left:
 
-For example, a scientist in his research might come across this image:
+<img src='img/example-embryo-images.png' height=250>
 
-<img src='Img/Geisha_model_input.png' height='350'>
+Previously, to find similar images, he/she would have to identify the stage of the embryo and the areas with blue staining, then query and sift through all the results. This is time consuming and difficult for students. With Geisha Image Search, he/she could simply save and upload the image, and receive these the 3 images above and to the right in return. Finding images of such visual similarity would take much more time and effort with manual methods.
 
-Without Geisha Image Search, if the scientist wanted to find other embyros like it, he/she would have to identify the features of that image and query them, or scroll through the [GEISHA](http://geisha.arizona.edu/geisha/) database in hopes of finding others like it. With Geisha Image Search, he/she could simply save that image and upload it to the tool in any size and in any typical format, and receive these images in response:
-
-<img src='Img/Geisha_model_output.jpeg' height='550'>
-
-Given these returned images (in reality, there would be a lot more than 4), the scientist can choose and analyze the ones that match his/her needs. For researchers, this amounts to a method that can efficiently browse and locate relevant embryo images, and for students, this represents an effective way to learn about [GEISHA](http://geisha.arizona.edu/geisha/) and developmental biology without the prerequisite knowledge and intuition needed to fully understand it.
+With this mechanism, searching for gene expression in the Geisha database is made more simple, effective, and flexible.  
 
 ### The Criteria for Similarity
 
-For each image, there are two features that distinguish it from others: the stage of embryo development and the anatomical locations (the location of patches stained blue, denoting gene expression). As stated above, these currently are the two primary criteria through which one can query and find images. While this is useful, it requires a "bottom up" approach (understanding before doing), and those with an image of an embryo may have difficulty finding similar ones. To address this problem, this project's image search engine automatically detects these two features and uses them to browse for similar images across the [GEISHA](http://geisha.arizona.edu/geisha/) database.
+For each image, there are two features that distinguish it from others: the stage of embryo development and the anatomical locations (the location of patches stained blue, denoting gene expression). These features determine the similarity of an embryo compared to another.
 
-Stage refers to how far the chicken embryo is in development. Here are two groups of embryos in similar stages.
+1. **Stage:** refers to how far the chicken embryo is in development. Here are three embryos in a similar stage.
 
-<img src='Img/Geisha_early_stage.jpeg' width='500'>
-<img src='Img/Geisha_later_stage.jpeg' width='500'>
+<img src='img/embryos-similar-stage.jpeg' width='500'>
 
-Location refers to where the gene is expressed in the embryo, indicated by blue staining. Here are two embryos with staining in similar places.
+2. **Location:** refers to where genes are expressed in the embryo, indicated by blue staining. Locations are predetermined parts of an embryo in which staining can occur (see the Geisha website for a full list). The example with 4 embryos show common expression in the "heart" and "somites" locations.
 
-<img src='Img/hardyCFCSt10.1.jpeg' width='250'>
-
-When comparing images, embryos in similar stages, with staining in similar places, will be considered more similar (they will visually look alike as well).
+When comparing images, embryos in similar stages, with staining in similar areas, will be considered more similar.
 
 ## Solution Concept
 
-As mentioned above, the capability to input an image and find "similar" ones would be useful for students and researchers alike. My proposed solution, Geisha Image Search, involves deep learning, through which neural networks are trained to predict the two most important parameters of every image: stage and anatomical location.
+This solution uses deep learning to compare and query images.
 
-### Deep Learning
+As defined above, the two relevant features of an embryo image are its stage and staining in anatomical locations. Thus, any search or comparison must take these features into account. To do so without manual specification (which represents the previous method of search), GEISHA Image Search utilizes deep learning to automatically extract the stage and anatomical locations of input images.
 
-Deep learning is a technique that enables a computer to "learn" from data, allowing it to extract patterns and perform tasks, even on complicated inputs that it has not seen. Among the advantages of deep learning is its ability to work with images. It performs all sorts of analyses, such as classifying the contents of an image (e.g. the anatomical locations in an embryo) or performing regression (e.g. the stage of an embryo). Using deep learning, Geisha Image Search can effectively recognize chicken embryos and extract meaningful information about them.
+Specifically, two deep learning models (or networks) are trained using the entire Geisha database to predict the stage and location information for a given embryo image. These prediction models, after being exposed to a signifcant amount of embryos, are able to accurately determine the stage and stained locations of new embryos, including ones from other databases or those with staining artificially drawn.
 
-The mechanism for deep learning is a structure called the "neural network". Based after the biological brain, the neural network is a learned mathematical function that maps inputs (images, in our case) to various outputs (stage and anatomical locations). These functions start with no predictive power, but given data with labels (the "correct answers" for what the stage or locations are), they can "learn" how to recognize patterns in images. Once these networks are trained with sufficient data, they can be deployed on new data that they have not seen— in our case, a new image given by the user in order to find "similar" ones.
+The solution framework is below. Upon receiving an input embryo image, the trained models determine the embryo's stage and the locations in which expression is observed. With this information, the embryo is compared with all the other embryos in the database. The embryos within Geisha are ranked by similarity with the input embryo and returned to the user.
 
-Deep learning is able to find the "similarity" between images because a neural network can return numerical outputs for any image. For example, when predicting anatomical locations (of which there are around 140), Geisha Image Search's neural network returns a list of 140 fractions, all between 0 and 1, that represents the likelihood of gene expression in each location (for example, if the number in the list corresponding to "Heart" is 0.98, the neural network is 98% sure that there is gene expression/blue staining in the embryo's heart). Similarly, the neural network predicting stage would also return a number that represents what it thinks the stage of the embryo is. 
+<img src='img/concept_map.png' width='500'>
 
-Because each image can be converted into a set of numbers, we can find the similarity between different images. 
 
-<img src='Img/Concept_map.png' width='500'>
-
-## Computing Similarity
-
-Having numbers associated with each image, we can compare images. Specifically, Geisha Image Search uses deep learning to obtain a set of numbers (a list of numbers for the embryo's location, and one number for the stage) for any new image it receives, and leverages these numbers to compare the image with existing ones in the database (whose numbers have already been rendered). For both the list of fractions and the single number, Geisha Image Search compares it with every image in the [GEISHA](http://geisha.arizona.edu/geisha/) database, calculating how similar other images are in stage or location. Given this, Geisha Image Search dynamically combines this information given the user's specific preferences (whether they care about embryos in similar stages or locations), and returns images that are similar to the one initially given.
 
 
 Project Organization
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
-    ├── README.md          <- The top-level README for developers using this project.
+    ├── README.md          
     ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
-    │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-    │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
+    │   ├── database-image-predictions.pkl  <- Saved predictions on images in the database
     │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
+    │   └── example-images <- Example input embryos and search results
     │
-    └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
+    ├── models             <- Trained deep learning models used to predict an embryo's stage and stained anatomical locations
+    │
+    ├── requirements.txt   <- Python requirements to run locally
+    │
+    ├── src            
+    │   ├── image-search-flask.py  <- The live web app that runs image search
+    │   │
+    │   └── search.py      <- Dependencies to run the search engine
+    │
+    └── img                <- Images for github
 
 
 --------

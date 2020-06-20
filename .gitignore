@@ -1,4 +1,7 @@
 notebooks
 Testing.ipynb
 __pycache__
+__init__.py
 .DS_Store
+.ipynb_checkpoints/
+temporary-downloads

@@ -104,7 +104,7 @@ Specifically, two deep learning models (or networks) are trained using the entir
 
 The solution framework is below. Upon receiving an input embryo image, the trained models determine the embryo's stage and the locations in which expression is observed. With this information, the embryo is compared with all the other embryos in the database. The embryos within Geisha are ranked by similarity with the input embryo and returned to the user.
 
-<img src='img/concept_map.png' width='500'>
+<img src='img/concept-map.png' width='500'>
 
 
 
@@ -126,7 +126,11 @@ Project Organization
     ├── src            
     │   ├── image-search-flask.py  <- The live web app that runs image search
     │   │
-    │   └── search.py      <- Dependencies to run the search engine
+    │   ├── search.py      <- Dependencies to run the search engine
+    │   │
+    │   ├── update-data.py <- A script to update this repository's data as new embryo images are created
+    │   │
+    │   └── last-updated,data-updates-log <- Logs to keep track of when images are updated
     │
     └── img                <- Images for github
 

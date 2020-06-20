@@ -24,6 +24,13 @@ from fastai.vision import *
 import urllib
 import pickle
 
+## Create directory to download images
+os.getcwd().split("/")[-1] == "GEISHA-Image-Search", "Must run from master directory"
+try:
+    os.mkdir("src/temporary-downloads")
+except FileExistsError:
+    pass
+
 ## Data
 # Load trained models
 stage_model = load_learner("models/","stage-prediction-model.pkl")
@@ -33,7 +40,7 @@ stage_model.model.eval()
 
 # Load saved results for existing images
 with open("data/database-image-predictions.pkl", "rb") as inp:
-    public_filenames, public_stages, public_locations = pickle.load(inp)
+    database_image_filenames, database_image_stages, database_image_locations = pickle.load(inp)
     
 ## Functions
 
@@ -62,8 +69,8 @@ def grab_image(image_in:str, *args, **kwargs) -> ImageDataBunch:
     else:
         try:
             image_url = "http://geisha.arizona.edu/geisha/photos/" + image_in
-            urllib.request.urlretrieve(image_url, "src/temporary-images/" + image_in)
-            return _create_databunch("src/temporary-images/" + image_in) 
+            urllib.request.urlretrieve(image_url, "src/temporary-downloads/" + image_in)
+            return _create_databunch("src/temporary-downloads/" + image_in) 
         except urllib.error.HTTPError:
             raise FileNotFoundError("Image not found locally or on the Geisha database")
 
@@ -111,7 +118,7 @@ def retrieve_predictions():
     anatomical locations predictions for each image. This information will be returned in a tuple of PyTorch
     tensors in the form (stages, locations).
     """
-    return (public_stages, public_locations)
+    return (database_image_stages, database_image_locations)
 def normalize_z_score(tensors:List[Tensor]):
     """
     Given a list of tensors, normalizes them to mean 0 and standard deviation 1, in essence returning z-scores.
@@ -175,7 +182,7 @@ def similarity(image:DataBunch, stage_sim_func:Callable[[DataBunch], tensor], lo
     combined_sims = alpha*stage_sims + (1-alpha)*locations_sims
     # Sort filenames in order of similarity, return
     sim_order = combined_sims.topk(len(combined_sims), dim=0)[1].squeeze()
-    return public_filenames[sim_order].tolist()
+    return database_image_filenames[sim_order].tolist()
 def stage_sim_absolute(image:DataBunch, **kwargs) -> Tensor:
     """
     The default function for computing stage similarity between embryos. Predicts the stage of the input image, and
@@ -190,8 +197,8 @@ def stage_sim_absolute(image:DataBunch, **kwargs) -> Tensor:
     in stage.
     """
     stage_pred = run_inference(image, do_locations=False)[0]
-    public_stages, _ = retrieve_predictions()
-    return -1*(stage_pred - public_stages).abs()
+    database_image_stages, _ = retrieve_predictions()
+    return -1*(stage_pred - database_image_stages).abs()
 
 def locations_sim_euclidean(image:DataBunch, **kwargs):
     """
@@ -210,8 +217,8 @@ def locations_sim_euclidean(image:DataBunch, **kwargs):
     locations vectors.
     """
     locations_pred = run_inference(image, do_stage=False)[0]
-    _, public_locations = retrieve_predictions()
-    euclidean_distance = torch.norm(public_locations-locations_pred, dim=1).unsqueeze(1)
+    _, database_image_locations = retrieve_predictions()
+    euclidean_distance = torch.norm(database_image_locations-locations_pred, dim=1).unsqueeze(1)
     return 1/(1+euclidean_distance)
 def _create_similarity_func(stage_sim_func:Callable[[DataBunch], tensor], locations_sim_func:Callable, **kwargs):
     """

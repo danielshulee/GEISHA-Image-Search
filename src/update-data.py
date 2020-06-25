@@ -1,7 +1,7 @@
 """
 File: update-data.py
 Author: Daniel Lee <danielslee@email.arizona.edu>
-Description: Updates the saved data/predictions on Geisha database embryos. This script only works on
+Description: Updates the saved data/predictions on Geisha database embryos. This script ONLY WORKS on
 the Geisha server, and is run daily there as a cron job to keep the search engine updated as new images
 come into the database.
 
@@ -88,8 +88,8 @@ if len(new_image_fnames) > 0: # Check if update is needed
         return
 
     updated_database_image_information = [database_image_filenames, database_image_stages, database_image_locations]
+    # Data is changed below here
     save_object(updated_database_image_information)
-
     # Update logs
     current_date = date.today().strftime("%m/%d/%y")
     with open("last-updated", "w") as file:

@@ -41,16 +41,16 @@ When deployed, the web app accepts an input image, and then searches and returns
 
 A sorted list of the most similar image filenames are returned, separated by newline characters. On a browser, this will display as a list of filenames separated by spaces.
 
-The web app is located at `src/image-search-flask.py`. Run it from the **main directory**:
+The web app is located at `src/image-search-flask.py`. Run it from the **main directory**, and optionally specify the port (defaults to 8081):
 
 ```bash
-python src/image-search-flask.py
+python src/image-search-flask.py <port number>
 ```
 
-Then, visit `localhost:8080`, and specify the filename and number of images (optionally) via query parameters.
+Then, visit `localhost:<port number>`, and specify the filename and number of images (optionally) via query parameters.
 
 ### Example Usage:
-**Input link:** [localhost:8080/?filename=R449.CDH5.S17.001.jpg&n=10]()
+**Input link:** [localhost:8081/?filename=R449.CDH5.S17.001.jpg&n=10]()
 
 **Displayed Output (may be separated by spaces instead):**
 ```

@@ -5,3 +5,4 @@ __init__.py
 .DS_Store
 .ipynb_checkpoints/
 temporary-downloads
+data/all_image_labels.csv

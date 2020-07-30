@@ -25,9 +25,9 @@ import urllib
 import pickle
 
 ## Create directory to download images
-os.getcwd().split("/")[-1] == "GEISHA-Image-Search", "Must run from master directory"
+os.getcwd().split("/")[-1] == "GEISHA-Image-Search", "Must run from repo home directory"
 try:
-    os.mkdir("src/temporary-downloads")
+    os.mkdir("src/downloaded-search-images")
 except FileExistsError:
     pass
 
@@ -45,7 +45,7 @@ with open("data/database-image-predictions.pkl", "rb") as inp:
 ## Functions
 
 # To create an ImageDataBunch object to run inference on and find similar images to 
-def grab_image(image_in:str, *args, **kwargs) -> ImageDataBunch:
+def grab_image(image_in:str, image_home_dir:str, *args, **kwargs) -> ImageDataBunch:
     """
     Given a filename or string that corresponds to an image, returns a fastai databunch containing just that
     image. Typcially, an input embyro image is fed to this function as a first step in the image search process.
@@ -55,22 +55,24 @@ def grab_image(image_in:str, *args, **kwargs) -> ImageDataBunch:
     stage and anatomical locations.
 
     Arguments:
-    - image_in: A string indicating the input image. This can be a path to a local image file (absolute or
-    relative to the main repository), or the filename of an image on the Geisha website (upon which it will
+    - image_in: A string indicating the input image. This can be a path to a local image file (relative to the image
+    home directory), or the filename of an image on the Geisha website (upon which it will
     be downloaded directly). Anything else will result in an error.
+    - image_home_dir: a local directory to look for `image_in` in
     
     Returns:
     An ImageDataBunch containing the following image.  The databunch resizes the image to 300 (w) x 400 (h)
     """
     # Check for image locally
-    if os.path.exists(image_in):
-        return _create_databunch(image_in)
+    if os.path.exists(image_home_dir+image_in):
+        return _create_databunch(image_home_dir+image_in)
     # Check the Geisha website for the image
     else:
         try:
-            image_url = "http://geisha.arizona.edu/geisha/photos/" + image_in
-            urllib.request.urlretrieve(image_url, "src/temporary-downloads/" + image_in)
-            return _create_databunch("src/temporary-downloads/" + image_in) 
+            image_url = "http://geisha.arizona.edu/geisha/photos/" + urllib.parse.quote(image_in)
+            print(image_url)
+            urllib.request.urlretrieve(image_url, "src/downloaded-search-images/" + image_in)
+            return _create_databunch("src/downloaded-search-images/" + image_in) 
         except urllib.error.HTTPError:
             raise FileNotFoundError("Image not found locally or on the Geisha database")
 
@@ -80,7 +82,7 @@ def _create_databunch(image_fn:str) -> ImageDataBunch:
 
     The DataBunch returned will resize the image to 300 (w) x 400 (h). It contains no other data transforms.
     """
-    return (ImageList([image_fn], path="../Images/")
+    return (ImageList([image_fn])
             .split_none()
             .label_empty()
             .transform(tfms=([],[]), size=(400,300))

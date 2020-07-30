@@ -71,9 +71,9 @@ new_image_fnames = np.setdiff1d(new_image_fnames, images_to_remove)
 if len(new_image_fnames) > 0:
 
     # Create databunch containing new images (a bit inefficient here, but it works)
-    inference_df = pd.DataFrame({"fname": new_image_fnames, "Label": range(len(new_image_fnames))})
+    new_image_df = pd.DataFrame({"fname": new_image_fnames, "Label": range(len(new_image_fnames))})
     bs = min(64, len(new_image_fnames))
-    inference_data = (ImageList.from_df(inference_df, path=image_home_dir)
+    new_image_data = (ImageList.from_df(new_image_df, path=image_home_dir)
                   .split_none()
                   .label_from_df(1, label_cls=FloatList)
                   .transform(tfms=([], []), size=(400,300))
@@ -85,12 +85,12 @@ if len(new_image_fnames) > 0:
     locations_model = load_learner("../models/","locations-prediction-model.pkl")
     locations_model.model.eval()
     stage_model.model.eval()
-    stage_model.data = inference_data
-    locations_model.data = inference_data
+    stage_model.data = new_image_data
+    locations_model.data = new_image_data
 
     # Run inference and get predictions
-    new_stage_preds = stage_model.get_preds(inference_data.train_dl)
-    new_locations_preds = locations_model.get_preds(inference_data.train_dl)
+    new_stage_preds = stage_model.get_preds(new_image_data.train_dl)
+    new_locations_preds = locations_model.get_preds(new_image_data.train_dl)
 
     # Add new filenames, stage predictions, and locations predictions to existing ones
     database_image_filenames = np.append(database_image_filenames, new_image_fnames)
@@ -116,6 +116,6 @@ if len(new_image_fnames) > 0:
     with open("data-updates-log", "a") as file:
         file.write(f"{current_date}: Added {len(new_image_fnames)} images ({' '.join(list(new_image_fnames))})\n")
     print(f"Updated with {len(new_image_fnames)} images")
-    
+
 else:
     print("Data already up to date")

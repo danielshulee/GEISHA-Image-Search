@@ -13,7 +13,7 @@ Improved image search for [Geisha](http://geisha.arizona.edu/geisha/), an online
 
 ##  Overview
 
-This project creates an image search engine for images within the [Geisha](http://geisha.arizona.edu/geisha/) database. It allows for search of embryo images based on an input embryo, which can yield quicker and more accurate results than querying based on manually specified parameters. With GEISHA Image Search, scientists and students can easily find and compare images based on similarity.
+This project presents similarity based image search for images within the [Geisha](http://geisha.arizona.edu/geisha/) database. It allows for the search of embryo images with an initial input embryo, which yields quicker and more relevant results than parameter based queries. With GEISHA Image Search, scientists have a novel way of finding embryo images through comparison with other embryos.
 
 An input embryo can be from any source, including:
 - From within the Geisha database
@@ -28,7 +28,7 @@ For usage information, read [directly below](#usage). For more information about
 
 This image search engine has been integrated in the [Geisha](http://geisha.arizona.edu/) website. It is recommended to use this search engine via the website tool.
 
-It can also be deployed locally via [Flask](https://github.com/pallets/flask) as a python web app. Running it requires the following **dependencies**:
+This repository contains the [Flask](https://github.com/pallets/flask)-based python web app that implements the search engine and powers its backend on the Geisha website. The app can be deployed with the following dependencies:
 
 * python 3+
 * Flask==1.1.1
@@ -36,20 +36,22 @@ It can also be deployed locally via [Flask](https://github.com/pallets/flask) as
 
 When deployed, the web app accepts an input image, and then searches and returns similar images in the Geisha database. It accepts two parameters, which are given as query parameters in the app's url:
 
-- `filename` (required): the filename of an image to find similar images to. This can be a path to a local image file (absolute or relative to this repository), or the filename of an image on the [Geisha](http://geisha.arizona.edu/) website (upon which it will be downloaded directly). Anything else will result in an error.
+- `filename` (required): the filename of an image to find similar images to. This can be a path to a local image file (relative a specified repository), or the filename of an image on the [Geisha](http://geisha.arizona.edu/) website (upon which it will be downloaded locally). Anything else will result in an error.
 - `num_images`: the number of similar images to return. The default is 50.
 
 A sorted list of the most similar image filenames are returned, separated by newline characters. On a browser, this will display as a list of filenames separated by spaces.
 
-The web app is located at `src/image-search-flask.py`. Run it from the **main directory**, and optionally specify the port (defaults to 8081):
-
-```bash
-python src/image-search-flask.py <port number>
-```
+The web app is located at `src/image-search-flask.py`. Run it from the **main directory**, and optionally specify these two command line arguments:
+- Port: specifies the port to run the app. This defaults to 8081 (8080 is used for the main Geisha page).
+- Image home directory: a local directory containing embryo images. If left empty, this will default to the directory that this script is run from, and images will most likely be pulled from the internet.
 
 Then, visit `localhost:<port number>`, and specify the filename and number of images (optionally) via query parameters.
 
 ### Example Usage:
+**Command Line:**
+```bash
+python src/image-search-flask.py 8081 /home/geisha/images
+```
 **Input link:** [localhost:8081/?filename=R449.CDH5.S17.001.jpg&n=10]()
 
 **Displayed Output (may be separated by spaces instead):**
@@ -67,6 +69,15 @@ The images can then be found on the Geisha website by appending the filename to 
 
 This repository contains several examples of the image search engine's results, located in `data/example-images`. Each folder contains 11 images: an example input, with 10 output embryos in order of similarity. The input embryo is denoted by "Input." in its filename, while the rest are denoted by numbers in their filenames. 
 
+### Housekeeping
+
+This repository contains a script at `src/update-data.py` that updates `database-image-predictions.pkl`, which contains saved information on the database embryos that inputs are compared to. The script, which should be run as a cron job on Geisha, checks for newly created embryo images and saves the necessary information needed for search queries. Usage:
+
+```bash
+python src/update-data.py <image home directory> # e.g. /home/geisha/images
+```
+
+`<image home directory>` refers to the directory where all existing and new embryo images exist. This is not exposed for security reasons.
 
 ## Problem
 
@@ -90,7 +101,7 @@ For each image, there are two features that distinguish it from others: the stag
 
 <img src='img/embryos-similar-stage.jpeg' width='500'>
 
-2. **Location:** refers to where genes are expressed in the embryo, indicated by blue staining. Locations are predetermined parts of an embryo in which staining can occur (see the Geisha website for a full list). The example with 4 embryos show common expression in the "heart" and "somites" locations.
+2. **Location:** refers to where genes are expressed in the embryo, indicated by blue staining. Locations are predetermined parts of an embryo in which staining can occur (see the Geisha website for a full list). The example above with 4 embryos show common expression in the "heart" and "somites" locations.
 
 When comparing images, embryos in similar stages, with staining in similar areas, will be considered more similar.
 
@@ -98,16 +109,15 @@ When comparing images, embryos in similar stages, with staining in similar areas
 
 This solution uses deep learning to compare and query images.
 
-As defined above, the two relevant features of an embryo image are its stage and staining in anatomical locations. Thus, any search or comparison must take these features into account. To do so without manual specification (which represents the previous method of search), GEISHA Image Search utilizes deep learning to automatically extract the stage and anatomical locations of input images.
+As defined above, the two relevant features of an embryo image are its stage and staining in anatomical locations. Thus, any search or comparison must take these features into account. To do so without manual specification (which represents the previous method of search), GEISHA Image Search utilizes deep learning to automatically extract the stained stage and anatomical locations of input images.
 
 Specifically, two deep learning models (or networks) are trained using the entire Geisha database to predict the stage and location information for a given embryo image. These prediction models, after being exposed to a signifcant amount of embryos, are able to accurately determine the stage and stained locations of new embryos, including ones from other databases or those with staining artificially drawn.
 
-The solution framework is below. Upon receiving an input embryo image, the trained models determine the embryo's stage and the locations in which expression is observed. With this information, the embryo is compared with all the other embryos in the database. The embryos within Geisha are ranked by similarity with the input embryo and returned to the user.
+The solution framework is below. Two trained models exist which predict on an input embryo's stage and the locations in which expression is observed. Every existing image in the database has already been analyzed by the models, and these results are saved and referenced during search queries. 
+
+During a search query, the models analyze an input image and compares its stage and stained locations with all the other embryos in the database. The embryos within Geisha are ranked by similarity with respect to the input embryo and returned to the user.
 
 <img src='img/concept-map.png' width='500'>
-
-
-
 
 Project Organization
 ------------
@@ -116,6 +126,8 @@ Project Organization
     ├── README.md          
     ├── data
     │   ├── database-image-predictions.pkl  <- Saved predictions on images in the database
+    │   │
+    │   ├── locations.txt  <- Then anatomical locations that the model looks for staining in, encoded one hot in the saved predictions file
     │   │
     │   └── example-images <- Example input embryos and search results
     │
@@ -128,9 +140,11 @@ Project Organization
     │   │
     │   ├── search.py      <- Dependencies to run the search engine
     │   │
-    │   ├── update-data.py <- A script to update this repository's data as new embryo images are created
+    │   ├── update-data.py <- A script to update saved data as new embryo images are created
     │   │
-    │   └── last-updated,data-updates-log <- Logs to keep track of when images are updated
+    │   ├── last-updated,data-updates-log <- Logs to keep track of when images are updated
+    │   │
+    │   └── downloaded-search-images <- Input embryos downloaded locally dyring search queries
     │
     └── img                <- Images for github
 

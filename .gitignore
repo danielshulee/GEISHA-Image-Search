@@ -4,5 +4,5 @@ __pycache__
 __init__.py
 .DS_Store
 .ipynb_checkpoints/
-temporary-downloads
+downloaded-search-images
 data/all_image_labels.csv

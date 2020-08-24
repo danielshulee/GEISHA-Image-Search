@@ -64,17 +64,16 @@ def grab_image(image_in:str, image_home_dir:str, *args, **kwargs) -> ImageDataBu
     An ImageDataBunch containing the following image.  The databunch resizes the image to 300 (w) x 400 (h)
     """
     # Check for image locally
-    if os.path.exists(image_home_dir+image_in):
-        return _create_databunch(image_home_dir+image_in)
+    if os.path.exists(image_home_dir+"/"+image_in):
+        return _create_databunch(image_home_dir+"/"+image_in)
     # Check the Geisha website for the image
     else:
         try:
             image_url = "http://geisha.arizona.edu/geisha/photos/" + urllib.parse.quote(image_in)
-            print(image_url)
             urllib.request.urlretrieve(image_url, "src/downloaded-search-images/" + image_in)
             return _create_databunch("src/downloaded-search-images/" + image_in) 
         except urllib.error.HTTPError:
-            raise FileNotFoundError("Image not found locally or on the Geisha database")
+            raise FileNotFoundError(f"Image not found locally or on the Geisha database. Tried {image_url}")
 
 def _create_databunch(image_fn:str) -> ImageDataBunch:
     """

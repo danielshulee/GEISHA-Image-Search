@@ -6,3 +6,5 @@ __init__.py
 .ipynb_checkpoints/
 downloaded-search-images
 data/all_image_labels.csv
+private_images_script
+unzip_script
